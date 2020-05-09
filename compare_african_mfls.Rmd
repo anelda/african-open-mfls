@@ -45,6 +45,10 @@ library(plotly)
 library(viridis)
 library(hrbrthemes)
 library(htmlwidgets)
+
+# Wordcloud
+library(wordcloud2)
+library(frequency)
 ```
 
 ```{r}
@@ -83,6 +87,9 @@ tm_shape(africa) +
                            "Last updated: "="Last updated"))
 
 tmap_mode("plot")
+
+# Clean up
+remove(africa, africa_lists)
 
 ```
 
@@ -268,7 +275,7 @@ for (country in countries){
   assign(paste0(country,"_hs"), hs_df)
   
   # Clean up workspace - remove temp dataframes
-  remove(who_df, hs_df)
+  remove(who_df, hs_df, country)
 }
 
 ```
@@ -343,6 +350,9 @@ table_headers %>%  kableExtra::kable() %>%
   kableExtra::kable_styling(bootstrap_options = c("striped", "hover"), full_width = F) %>% 
   kableExtra::scroll_box(width = "100%")
 
+# Clean up
+remove(table_headers, fill_col)
+
 ```
 
 ```{r bubbleplot_prep}
@@ -386,21 +396,33 @@ remove(dataset_names, datasets, dataset_obs, dataset_cols, ds)
 
 ```
 
-```{r bubbleplot }
+<br>
 
-bubble_plot <- bubble_df %>%
-  ggplot(aes(x = Attributes, y = Facilities, colour = Country, text = text, size = Attributes)) +
-  geom_point(alpha = 0.7) +
-  scale_color_viridis(discrete = TRUE, guide = FALSE) +
-  scale_size(range = c(1.4, 19), name="Population (M)") +
-  theme_ipsum() +
-  theme(legend.position = "none") 
-#    + ggtitle("Number of attributes and facilities in each of the datasets for the seven countries")
+We can use a visual way to look at the overlap of attributes between various datasets through a wordcloud.
 
-bubble_plot_int <- plotly::ggplotly(bubble_plot, tooltip = "text")
+```{r wordcloud}
 
-#htmlwidgets::saveWidget(bubble_plot_int, here("img", "bubbles.html"))
+library(tm)
+library(ggwordcloud)
 
-bubble_plot_int
+# Used this tutorial to create frequency table:
+# https://www.pluralsight.com/guides/visualization-text-data-using-word-cloud-r
+# Create corpus
+corpus <- Corpus(VectorSource(c(colnames(ken_hs), colnames(ken_who), 
+                                  colnames(ken_mfl), colnames(mwi_mfl), colnames(nam_mfl),
+                                  colnames(rwa_mfl), colnames(ssd_mfl), colnames(tza_mfl), colnames(zmb_mfl))))
+#Conversion to Lowercase
+corpus = tm_map(corpus, PlainTextDocument)
+corpus = tm_map(corpus, tolower)
 
+# Create frequency table
+DTM <- TermDocumentMatrix(corpus)
+mat <- as.matrix(DTM)
+f <- sort(rowSums(mat),decreasing=TRUE)
+dat <- data.frame(word = names(f),freq=f)
+# Plot wordcloud 
+ggwordcloud::ggwordcloud2(dat, size=1.2)
+
+# Clean up
+remove(corpus, DTM, mat, f, dat)
 ```
