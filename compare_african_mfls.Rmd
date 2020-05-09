@@ -23,6 +23,15 @@ library(readr)
 library(dplyr)
 library(stringr)
 
+# For maps
+library(sf)
+library(raster)
+library(tmap)
+library(spData)
+library(leaflet)
+library(cartogram)
+library(googlesheets4)
+library(countrycode)
 
 # Working with Namibian JSON
 library(jsonlite)
@@ -38,6 +47,46 @@ library(hrbrthemes)
 library(htmlwidgets)
 ```
 
+```{r}
+
+# Load Google Sheet describing African open health facility lists
+# This sheet is now published as CSV and can be read directly from the URL without needing oauth
+africa_lists <- read_csv("https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4rHsHzAx_lnA9G0DJy-zjQvboAc2KpcvEIUgvbwanp7U5pPbcHzmpCQjz0Cw0YVujxOp5HypAXqPl/pub?gid=1678013670&single=true&output=csv")
+
+# Add column with iso2c codes for use in mapping
+africa_lists <- africa_lists %>% 
+  mutate(country_iso = countrycode(Country, origin = "country.name", destination = "iso2c")) %>% 
+  relocate(country_iso, .after = "Country") %>% 
+  # Add column for use in mapping
+  mutate(`Open facility list online` = case_when(`Official MFL accessible online` == "Yes" ~ "Official MoH MFL",
+                                                 `Official MFL accessible online` == "No" ~ "Other source",
+                                                 `Official MFL accessible online` == "Unclear" ~ "Official status unclear"))
+
+# Merge world data from spData with africa_lists created in previous step for to obtain African polygons
+# Select only relevent columns
+africa <-  world %>%
+  filter(continent == "Africa", !is.na(iso_a2)) %>%
+  right_join(africa_lists, by = c("iso_a2" = "country_iso")) %>%
+  dplyr::select(name_long, `Official MFL accessible online`, `Open facility list online`, Owner, License, 
+                `Download format`, `Downloaded data geocoded`, `Health facility data URL`, `About page URL`, 
+                `Alternative health facilities data source`, `Last updated`, geom) %>% 
+  st_transform("+proj=aea +lat_1=20 +lat_2=-23 +lat_0=0 +lon_0=25")
+
+# Draw map
+tmap_mode("view")
+tm_shape(africa) + 
+  tm_polygons("Open facility list online",
+              # Create list of items that will show when clicking on a country
+              popup.vars=c("Owner: "="Owner", "License: "="License", 
+                           "Recognised as official MFL: "="Official MFL accessible online",
+                           "Download format: " = "Download format", "Geocoded: "="Downloaded data geocoded", 
+                           "Last updated: "="Last updated"))
+
+tmap_mode("plot")
+
+```
+
+
 # Obtaining the data
 
 ## Kenya
@@ -51,9 +100,9 @@ ken_mfl <- read_xlsx(here("data", "raw_data", "kenya.xlsx"))
 ```
 ```{r kenya_table}
 
-head(ken_mfl) %>%  kableExtra::kable() %>% 
+ken_mfl[1:2,] %>%  kableExtra::kable() %>% 
   kableExtra::kable_styling(bootstrap_options = c("striped", "hover"), full_width = F) %>% 
-  kableExtra::scroll_box(width = "100%", height = "300px") %>% 
+  kableExtra::scroll_box(width = "100%") %>% 
   kableExtra::footnote(general = "An excerpt showing the column headers and format of the raw data available from the Kenyan MFL")
 
 ```
@@ -69,9 +118,9 @@ mwi_mfl <- read_xlsx(here("data", "raw_data", "malawi.xlsx"))
 ```
 ```{r malawi_table}
 
-head(mwi_mfl) %>%  kableExtra::kable() %>% 
+mwi_mfl[1:2,] %>%  kableExtra::kable() %>% 
   kableExtra::kable_styling(bootstrap_options = c("striped", "hover"), full_width = F) %>% 
-  kableExtra::scroll_box(width = "100%", height = "300px") %>% 
+  kableExtra::scroll_box(width = "100%") %>% 
   kableExtra::footnote(general = "An excerpt showing the column headers and format of the raw data available from the Malawian MFL")
 
 ```
@@ -98,9 +147,9 @@ nam_mfl <- read_csv(here("data", "raw_data", "namibia.csv"))
 
 ```{r namibia_table}
 
-head(nam_mfl) %>%  kableExtra::kable() %>% 
+nam_mfl[1:2,] %>%  kableExtra::kable() %>% 
   kableExtra::kable_styling(bootstrap_options = c("striped", "hover"), full_width = F) %>% 
-  kableExtra::scroll_box(width = "100%", height = "300px") %>% 
+  kableExtra::scroll_box(width = "100%") %>% 
   kableExtra::footnote(general = "An excerpt showing the column headers and format of the raw data available from the Namibian MFL")
 
 ```
@@ -118,9 +167,9 @@ rwa_mfl <- read_csv(here("data", "raw_data", "rwanda.csv"))
 
 ```{r rwanda_table}
 
-head(rwa_mfl) %>%  kableExtra::kable() %>% 
+rwa_mfl[1:2,] %>%  kableExtra::kable() %>% 
   kableExtra::kable_styling(bootstrap_options = c("striped", "hover"), full_width = F) %>% 
-  kableExtra::scroll_box(width = "100%", height = "500px") %>% 
+  kableExtra::scroll_box(width = "100%") %>% 
   kableExtra::footnote(general = "An excerpt showing the column headers and format of the raw data available from the Rwandan MFL")
 
 ```
@@ -137,9 +186,9 @@ ssd_mfl <- read_csv("https://www.southsudanhealth.info/PublicData/facility_info_
 
 ```{r s_sudan_table}
 
-head(ssd_mfl) %>%  kableExtra::kable() %>% 
+ssd_mfl[1:2,] %>%  kableExtra::kable() %>% 
   kableExtra::kable_styling(bootstrap_options = c("striped", "hover"), full_width = F) %>% 
-  kableExtra::scroll_box(width = "100%", height = "300px") %>% 
+  kableExtra::scroll_box(width = "100%") %>% 
   kableExtra::footnote(general = "An excerpt showing the column headers and format of the raw data available from the South Sudan MFL")
 
 ```
@@ -168,9 +217,9 @@ remove(tanzania_nongeocode, tanzania_geocode)
 
 ```{r tanzania_table}
 
-head(tza_mfl) %>%  kableExtra::kable() %>% 
+tza_mfl[1:2,] %>%  kableExtra::kable() %>% 
   kableExtra::kable_styling(bootstrap_options = c("striped", "hover"), full_width = F) %>% 
-  kableExtra::scroll_box(width = "100%", height = "300px") %>% 
+  kableExtra::scroll_box(width = "100%") %>% 
   kableExtra::footnote(general = "An excerpt showing the column headers and format of the raw data available from the Tanzanian MFL")
 
 ```
@@ -187,9 +236,9 @@ zmb_mfl <- read_csv("https://raw.githubusercontent.com/MOH-Zambia/MFL/master/geo
 
 ```{r zambia_table}
 
-head(zmb_mfl) %>%  kableExtra::kable() %>% 
+zmb_mfl[1:2,] %>%  kableExtra::kable() %>% 
   kableExtra::kable_styling(bootstrap_options = c("striped", "hover"), full_width = F) %>% 
-  kableExtra::scroll_box(width = "100%", height = "300px") %>% 
+  kableExtra::scroll_box(width = "100%") %>% 
   kableExtra::footnote(general = "An excerpt showing the column headers and format of the raw data available from the Zambian MFL")
 
 ```
@@ -230,9 +279,9 @@ Below are excerpts from the WHO and healthsites.io data for Kenya to give the re
 
 ```{r kenya_who_table}
 
-head(ken_who) %>%  kableExtra::kable() %>% 
+ken_who[1:2,] %>%  kableExtra::kable() %>% 
   kableExtra::kable_styling(bootstrap_options = c("striped", "hover"), full_width = F) %>% 
-  kableExtra::scroll_box(width = "100%", height = "300px") %>% 
+  kableExtra::scroll_box(width = "100%") %>% 
   kableExtra::footnote(general = "An excerpt showing the column headers and format of the raw data available from the WHO data for Kenya")
 
 ```
@@ -242,17 +291,57 @@ head(ken_who) %>%  kableExtra::kable() %>%
 
 ```{r kenya_hs_table}
 
-head(ken_hs) %>%  kableExtra::kable() %>% 
+ken_hs[1:2,] %>%  kableExtra::kable() %>% 
   kableExtra::kable_styling(bootstrap_options = c("striped", "hover"), full_width = F) %>% 
-  kableExtra::scroll_box(width = "100%", height = "300px") %>% 
+  kableExtra::scroll_box(width = "100%") %>% 
   kableExtra::footnote(general = "An excerpt showing the column headers and format of the raw data available from the healthsites.io data for Kenya")
 
 ```
 
 # Exploring the data
 
+## Facility Attributes
+
+We'll first take a look at the type of attributes that are available from country MFLs and other open data sources. The table below shows great variability in terms of how well facililties are described in the various datasets.
+
 ```{r table_headers}
 
+# Create a vector containing the column headers for each dataset but filled up with empty space 
+# Want to create a tibble with each dataset's headers as a column and therefore we need the vectors to be of equal length
+# HS data has the most headers, so we use that as basis and make all vectors as long as HS 
+fill_col <- function(df){
+  # Calculate the difference in header numbers between healthsites data and the target dataset
+  fill_number <- length(colnames(ken_hs)) - length(colnames(df))
+  # Create the vector where the first elements are the sorted column names of the target dataset
+  col_data <- sort(colnames(df))
+  # Fill the rest of the vector with empty cells to be able to create the tibble
+  for (i in 1:fill_number){
+    col_data <- append(col_data, "")
+  }
+  # Return the vector of specified length
+  return(col_data)
+}
+
+# Create a table with columns = header names sorted alphabetically
+table_headers <- tibble(`healthsite.io` = sort(colnames(ken_hs)),
+                        WHO = fill_col(ken_who),
+                        `Kenya MFL` = fill_col(ken_mfl),
+                        `Malawi MFL` = fill_col(mwi_mfl),
+                        `Namibia MFL` = fill_col(nam_mfl),
+                        `Rwanda MFL` = fill_col(rwa_mfl),
+                        `South Sudan MFL` = fill_col(ssd_mfl),
+                        `Tanzania MFL` = fill_col(tza_mfl),
+                        `Zambia MFL` = fill_col(zmb_mfl)
+                        )
+
+
+```
+
+```{r dataset_column_headers_table}
+
+table_headers %>%  kableExtra::kable() %>% 
+  kableExtra::kable_styling(bootstrap_options = c("striped", "hover"), full_width = F) %>% 
+  kableExtra::scroll_box(width = "100%")
 
 ```
 
@@ -310,8 +399,8 @@ bubble_plot <- bubble_df %>%
 
 bubble_plot_int <- plotly::ggplotly(bubble_plot, tooltip = "text")
 
-htmlwidgets::saveWidget(bubble_plot_int, here("img", "bubbles.html"))
+#htmlwidgets::saveWidget(bubble_plot_int, here("img", "bubbles.html"))
 
-bubble_plot
+bubble_plot_int
 
 ```
