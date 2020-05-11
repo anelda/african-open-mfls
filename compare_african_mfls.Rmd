@@ -51,7 +51,7 @@ library(wordcloud2)
 library(frequency)
 ```
 
-```{r}
+```{r map_open_lists}
 
 # Load Google Sheet describing African open health facility lists
 # This sheet is now published as CSV and can be read directly from the URL without needing oauth
@@ -105,6 +105,7 @@ The Kenyan MFL is available at http://kmhfl.health.go.ke/#/home. The data is dow
 ken_mfl <- read_xlsx(here("data", "raw_data", "kenya.xlsx"))
 
 ```
+
 ```{r kenya_table}
 
 ken_mfl[1:2,] %>%  kableExtra::kable() %>% 
@@ -307,9 +308,254 @@ ken_hs[1:2,] %>%  kableExtra::kable() %>%
 
 # Exploring the data
 
-## Facility Attributes
+## Number of facilities per dataset
 
-We'll first take a look at the type of attributes that are available from country MFLs and other open data sources. The table below shows great variability in terms of how well facililties are described in the various datasets.
+```{r data_prep}
+
+# Create dataframe with number of observations and number of columns for each dataset
+# Step 1: Create vector for dataset names
+dataset_names <- c(ls(pattern = "mfl"), ls(pattern = "who"), ls(pattern = "hs"))
+
+# Step 2: Create vector for # observations and # columns per dataset
+# Step 2a: Create list of dataframes to run nrow, ncol on
+datasets <- mget(dataset_names)
+
+# Step 2b: Create vectors
+dataset_obs <- c()
+dataset_cols <- c()
+for (ds in datasets){
+  dataset_obs <- append(dataset_obs, nrow(ds))
+  dataset_cols <- append(dataset_cols, ncol(ds))
+}
+
+# Step 3: Create dataframe with everything combined
+health_lists_df <- tibble(Dataset = dataset_names, 
+                    Facilities = dataset_obs,
+                    Attributes = dataset_cols)
+health_lists_df <- health_lists_df %>% 
+  mutate(Country = case_when(str_detect(Dataset, "ken") ~ "Kenya",
+                             str_detect(Dataset, "mwi") ~ "Malawi",
+                             str_detect(Dataset, "nam") ~ "Namibia",
+                             str_detect(Dataset, "rwa") ~ "Rwanda",
+                             str_detect(Dataset, "ssd") ~ "South Sudan",
+                             str_detect(Dataset, "tza") ~ "Tanzania",
+                             str_detect(Dataset, "zmb") ~ "Zambia")) %>% 
+  mutate(`Data Source` = case_when(str_detect(Dataset, "mfl") ~ "Master facility list",
+                                   str_detect(Dataset, "who") ~ "WHO",
+                                   str_detect(Dataset, "hs") ~ "healthsites.io")) %>% 
+  mutate(text = paste("Country: ", Country, "\nData source: ", `Data Source`, "\nFacilities: ", Facilities, "\nAttributes: ", Attributes, sep="")) %>%
+  mutate(Dataset = factor(Dataset, Dataset))
+
+# Step 4: Remove clutter
+remove(dataset_names, dataset_obs, dataset_cols, ds)
+
+```
+
+```{r compare_mfls}
+
+health_lists_df %>% 
+  group_by(Country) %>% 
+  ggplot(aes(x = Country, y = Facilities, fill = `Data Source`)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  scale_fill_viridis(discrete = TRUE) +
+  theme_minimal()
+
+```
+
+## Facility types
+
+If we want to compare the types of facilities listed in each dataset, we first have to (manually) identify the column that contains information about facility type.
+
+```{r extracting_types}
+
+k_types <- unique(ken_mfl$`Facility type`)
+
+m_types <- unique(mwi_mfl$TYPE)
+
+r_types <- unique(rwa_mfl$`Facility type`)
+
+s_types <- unique(ssd_mfl$type)
+
+t_types <- unique(tza_mfl$`Facility Type`)
+
+z_types <- unique(zmb_mfl$facility_type)
+
+# Can't write function for next step because column names vary between datasets
+# Get the names of WHO country dataframes
+names_who <- c(ls(pattern = "^\\w\\w\\w_who$"))
+
+# Get the WHO country dataframe content
+datasets_who <- mget(names_who)
+
+# Create vectors with country name and types
+who_country <- c()
+who_types <- c()
+for (who in datasets_who){
+  who_country <- append(who_country, unique(who$Country))
+  who_types <- append(who_types, list(unique(who$`Facility type`)))
+}
+
+# Create dataframe with country name in first column and unique facility types observed in second column
+who_fac_types <- tibble(country = who_country,
+                        types = who_types)
+
+# Get the names of WHO country dataframes
+names_hs <- c(ls(pattern = "^\\w\\w\\w_hs$"))
+
+# Get the WHO country dataframe content
+datasets_hs <- mget(names_hs)
+
+# Create vectors with country name and types
+hs_country <- c()
+hs_types <- c()
+for (hs in datasets_hs){
+  hs_country <- append(hs_country, unique(hs$country))
+  hs_types <- append(hs_types, list(unique(hs$amenity)))
+}
+
+# Create dataframe with country name in first column and unique facility types observed in second column
+hs_fac_types <- tibble(country = hs_country,
+                        types = hs_types)
+
+```
+
+Here is the mapping:
+
+The columns containing facility types in the WHO dataset and healthsites.io were respectively named `Facility type` and `amenity`.
+
+- Kenya: column containing facility types in MFL = `Facility type`
+
+    - MFL: `r paste(k_types, sep = ", ")`
+    - WHO: `r paste(unlist(who_fac_types$types[who_fac_types$country == "Kenya"]), collapse = ", ")`
+    - healthsites.io: `r paste(unlist(hs_fac_types$types[hs_fac_types$country == "Kenya"]), collapse = ", ")`
+  
+- Malawi: column containing facility types in MFL = `TYPE`
+
+    - MFL: `r paste(m_types, sep = ", ")`
+    - WHO: `r paste(unlist(who_fac_types$types[who_fac_types$country == "Malawi"]), collapse = ", ")`
+    - healthsites.io: `r paste(unlist(hs_fac_types$types[hs_fac_types$country == "Malawi"]), collapse = ", ")`
+  
+- Namibia: No column for facility types in MFL
+
+    - WHO: `r paste(unlist(who_fac_types$types[who_fac_types$country == "Namibia"]), collapse = ", ")`
+    - healthsites.io: `r paste(unlist(hs_fac_types$types[hs_fac_types$country == "Namibia"]), collapse = ", ")`
+  
+- Rwanda: Column name for facility types in MFL = `Facility type`
+
+    - MFL: `r paste(r_types, sep = ", ")`
+    - WHO: `r paste(unlist(who_fac_types$types[who_fac_types$country == "Rwanda"]), collapse = ", ")`
+    - healthsites.io: `r paste(unlist(hs_fac_types$types[hs_fac_types$country == "Rwanda"]), collapse = ", ")`
+  
+- South Sudan: Column name for facility types in MFL = `type`
+
+    - MFL: `r paste(s_types, sep = ", ")`
+    - WHO: `r paste(unlist(who_fac_types$types[who_fac_types$country == "South Sudan"]), collapse = ", ")`
+    - healthsites.io: `r paste(unlist(hs_fac_types$types[hs_fac_types$country == "South Sudan"]), collapse = ", ")`
+  
+
+- Tanzania: Column name for facility types in MFL = `Facility Type`
+
+    - MFL: `r paste(t_types, sep = ", ")`
+    - WHO: `r paste(unlist(who_fac_types$types[who_fac_types$country == "Tanzania"]), collapse = ", ")`
+    - healthsites.io: `r paste(unlist(hs_fac_types$types[hs_fac_types$country == "Tanzania"]), collapse = ", ")`
+  
+- Zambia: Column name for facility types in MFL = `facility_type`
+
+    - MFL: `r paste(z_types, sep = ", ")`
+    - WHO: `r paste(unlist(who_fac_types$types[who_fac_types$country == "Zambia"]), collapse = ", ")`
+    - healthsites.io: `r paste(unlist(hs_fac_types$types[hs_fac_types$country == "Zambia"]), collapse = ", ")`
+
+### Recommended facility attributes in an MFL
+
+According to [_HIS geo-enabling: Guidance on the establishment of a common geo-registry for the simultaneous hosting,
+maintenance, update and sharing of master lists core to public health_](https://healthgeolab.net/DOCUMENTS/Guidance_Common_Geo-registry_Ve1.pdf) developed in 2017 by the AeHINGIS Lab and InSTEDD through funding from the Asian Development Bank, information included in an MFL are split into two domains: the _signature domain_ (ellaborated on below) and the _service domain_ (that includes information about services and capacity of a health facility).
+
+The service domain include the following:
+
+1. Health facility identifier: Official unique identifier attached to the health facility
+2. Health facility name: Official name of the health facility in both English and local
+language
+3. Address: street name and number in which the health facility is located (when
+applicable)
+4. Location in the administrative structure: Official name and code of the administrative
+divisions in which the health facility is located and this down to the lowest existing
+administrative level (a separated set of fields for each level)
+5. Location in the reporting structure: Official name and code of the reporting divisions in
+which the health facility is located and this down to the lowest existing reporting level
+(when applicable and with a separated set of fields for each level)
+6. Geographic coordinates: latitude and longitude of the health facility expressed in decimal
+degrees together with the indication of the source, method and accuracy level attached
+to the coordinates (a separate field for each information)
+7. Health facility type: Type of the health facility based on the official classification used in
+the country
+8. Health facility ownership or managing authority: Major (government, private) and sub
+classification (Ministry of Health, army, police,...) describing the entity that owns or
+manage the health facility. (may require for the use of separated fields)
+9. Past health facility names: Official names previously attached to the health facility (may
+require for the use of several fields)
+10. Health facility contact information: Information needed to contact the health facility
+through different media including but not limited to the full name and position of the
+health facility head as well as the phone numbers (mobile, landline) and email address
+(to be captured in separated fields)
+11. Health facility status: To be able to capture in the common geo-registry if the health
+facility is active or inactive and the reason for inactivity if the later applies (to be captured
+in separated fields)
+
+The guide strongly recommends that each datasource is indicated along with a time stamp for when the data was obtained. This will effectively result in three columns for each data point: the first containing the information such as the identifier, name, or coordinates; the second containing the source; and the third containing the date and time stamp of when it was obtained.
+
+According to this document, the capturing of service domain and other information not mentioned above form part of the optional component of the MFL.
+
+```{r recommended_attributes}
+
+recommende_attr <- tibble(
+  identifier = as.character(),
+  legacy_identifiers = as.character(),
+  name = as.character(),
+  previous_names = as.character(),
+  type = as.character(),
+  ownership = as.character(),
+  ownership_secondary = as.character(),
+  contact_landline = as.character(),
+  contact_mobile = as.character(),
+  contact_email = as.character(),
+  website = as.character(),
+  facility_head_name = as.character(),
+  facility_head_surname = as.character(),
+  facility_head_position = as.character(),
+  address = as.character(),
+  admin_level2_code = as.character(),
+  admin_level2_name = as.character(),
+  admin_level3_code = as.character(),
+  admin_level3_name = as.character(),
+  admin_level4_code = as.character(),
+  admin_level4_name = as.character(),
+  report_level1_name = as.character(),
+  report_level1_code = as.character(),
+  report_level2_name = as.character(),
+  report_level2_code = as.character(),
+  report_level3_name = as.character(),
+  report_level3_code = as.character(),
+  latitude = as.numeric(),
+  longitude = as.numeric(),
+  facility_status = as.character(),
+  facility_status_comment = as.character(),
+  date_opened = as.character(),
+  date_closed = as.character()
+  
+  
+  )
+```
+
+
+```{r cleanup_facility_types}
+
+remove(k_types, m_types, r_types, s_types, t_types, z_types, names_who, datasets_who, who_country, who_types, names_hs, datasets_hs, hs_country, hs_types, who, hs, hs_fac_types, who_fac_types)
+
+```
+
+## Facility attributes
+
+Taking a closer look at the type of attributes that are available from country MFLs and other open data sources we notice great variability in terms of how well facililties are described. The table below shows the column headers for each dataset.
 
 ```{r table_headers}
 
@@ -355,46 +601,6 @@ remove(table_headers, fill_col)
 
 ```
 
-```{r bubbleplot_prep}
-
-# Create dataframe with number of observations and number of columns for each dataset
-# Step 1: Create vector for dataset names
-dataset_names <- c(ls(pattern = "mfl"), ls(pattern = "who"), ls(pattern = "hs"))
-
-# Step 2: Create vector for # observations and # columns per dataset
-# Step 2a: Create list of dataframes to run nrow, ncol on
-datasets <- mget(dataset_names)
-
-# Step 2b: Create vectors
-dataset_obs <- c()
-dataset_cols <- c()
-for (ds in datasets){
-  dataset_obs <- append(dataset_obs, nrow(ds))
-  dataset_cols <- append(dataset_cols, ncol(ds))
-}
-
-# Step 3: Create dataframe with everything combined
-bubble_df <- tibble(Dataset = dataset_names, 
-                    Facilities = dataset_obs,
-                    Attributes = dataset_cols)
-bubble_df <- bubble_df %>% 
-  mutate(Country = case_when(str_detect(Dataset, "ken") ~ "Kenya",
-                             str_detect(Dataset, "mwi") ~ "Malawi",
-                             str_detect(Dataset, "nam") ~ "Namibia",
-                             str_detect(Dataset, "rwa") ~ "Rwanda",
-                             str_detect(Dataset, "ssd") ~ "South Sudan",
-                             str_detect(Dataset, "tza") ~ "Tanzania",
-                             str_detect(Dataset, "zmb") ~ "Zambia")) %>% 
-  mutate(`Data Source` = case_when(str_detect(Dataset, "mfl") ~ "Master facility list",
-                                   str_detect(Dataset, "who") ~ "WHO",
-                                   str_detect(Dataset, "hs") ~ "healthsites.io")) %>% 
-  mutate(text = paste("Country: ", Country, "\nData source: ", `Data Source`, "\nFacilities: ", Facilities, "\nAttributes: ", Attributes, sep="")) %>%
-  mutate(Dataset = factor(Dataset, Dataset))
-
-# Step 4: Remove clutter
-remove(dataset_names, datasets, dataset_obs, dataset_cols, ds)
-
-```
 
 <br>
 
