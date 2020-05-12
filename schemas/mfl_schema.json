@@ -1,0 +1,577 @@
+{
+  "$id": "http://example.com/product.schema.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Master facility list schema",
+  "description": "The comprehensive list of health facilities in a country",
+  "type": "object",
+  "properties":
+  {
+    "fac_identifier": 
+    {
+      "description": "Official unique identifier attached to the health facility",
+      "type": "object",
+      "properties": {
+        "identifier": {
+          "description": "Official unique identifier attached to the health facility",
+          "type": "string"
+        },
+        "source": {
+          "description": "Data source",
+          "type": "string"
+        },
+        "date_stamp": {
+          "description": "Date and time updated",
+          "type": "string"
+        }
+    }
+    },
+    "legacy_identifiers": 
+    {
+      "description": "Other identifiers linked to this facility - potentially from other datasources",
+      "type": "object",
+      "properties": {
+        "legacy_identifiers": {
+          "description": "A list of legacy identifiers potentially from other sources",
+          "type": "array",
+          "items": {
+            "type": "string" 
+            }
+          },
+        "source": {
+          "description": "A list of sources - 1 for each legacy identifier",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "date_stamp": {
+          "description": " A list of datestamps when legacy identifier was added to database- 1 for each legacy identifier",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "facility_name": 
+    {
+      "description": "Official name of the health facility in both English and local languages",
+      "type": "object",
+      "properties": {
+        "name_english": {
+           "description": "The name of the facility in English",
+           "type": "object",
+           "properties": {
+             "name": {
+               "type": "string"
+             },
+             "source": {
+              "description": "The data source where the name came from",
+              "type": "string"
+             },
+             "date_stamp": {
+              "description": " The datestamp when the value was added to the database",
+              "type": "string"
+             }
+           }
+        },
+        "names_local": {
+          "description": "List of the facility name in local languages",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "names_languages": {
+          "description": "One entry for each entry in the names_local list - the language in which the name is given",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "previous_names": 
+    {
+      "description": " A list of previous names for the facility",
+      "type": "object",
+      "properties": {
+        "names": {
+          "description": "The list of previous names of the facility",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "source": {
+          "description": " The list of data sources - one for each of the previous facility names",
+          "type": "array",
+          "items": {
+            "type": "string" 
+          }
+        },
+        "date_stamp": {
+          "description": " The list of datestamps when the value was added to the database - one for each previous facility name",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "facility_type":
+    {
+      "description": "Type of the health facility based on the official classification used in the country",
+      "type": "object",
+      "properties": {
+        "f_type": {
+          "description": "Type of the health facility based on the official classification used in the country",
+          "type": "string"
+        },
+        "source": {
+          "description": " The data source",
+          "type": "string"
+        },
+        "date_stamp": {
+          "description": " The date stamp when the facility type was added to the database",
+          "type": "string"
+        }
+      }
+    },
+    "ownership": 
+    {
+      "description": "Major (government, private) and sub classification (Ministry of Health, army, police,...) describing the entity that owns or manage the health facility",
+      "type": "object",
+      "properties": {
+        "major_owner": {
+          "description": "Public or private entity",
+          "type": "object",
+          "properties": {
+            "owner": {
+              "type": "string"
+            },
+            "source": {
+              "type": "string"
+            },
+            "date_stamp": {
+              "type": "string"
+            }
+          }
+        },
+        "sub_owner": {
+          "description": "The actual owner of a health facility e.g. Ministry of Health, army, police",
+          "type": "object",
+          "properties": {
+            "owner": {
+              "type": "string"
+            },
+            "source": {
+              "type": "string"
+            },
+            "date_stamp": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "contact_details":
+    {
+      "description": " Information needed to contact the health facility through different media including but not limited to the full name and position of the health facility head as well as the phone numbers (mobile, landline) and email address",
+      "type": "object",
+      "properties": {
+        "facility_head": {
+          "description": "full name and position of the health facility head as well as the phone numbers (mobile, landline) and email address",
+          "type": "object",
+          "properties": {
+            "full_name": {
+              "type": "string"
+            },
+            "email": {
+              "type": "string"
+            },
+            "landline": {
+              "type": "string"
+            },
+            "source": {
+              "type": "string"
+            },
+            "date_stamp": {
+              "type": "string"
+            }
+          }
+        },
+        "facility_contact": {
+          "description": "Contact details for the facility ",
+          "type": "object",
+          "properties": {
+            "physical_address": {
+              "description": "Full street address of facility",
+              "type": "object",
+              "properties": {
+                "room_number":{
+                  "type": "string"
+                },
+                "building_name": {
+                  "type": "string"
+                },
+                "street_number": {
+                  "type": "number"
+                },
+                "street_name": {
+                  "type": "string"
+                },
+                "suburb": {
+                  "type": "string"
+                },
+                "town": {
+                  "type": "string"
+                },
+                "code": {
+                  "type": "string"
+                },
+                "source": {
+                  "description": "Data source",
+                  "type": "string"
+                },
+                "date_stamp": {
+                  "type": "string"
+                }   
+              }
+            },
+            "postal_address": {
+              "description": "Postal address if different from street address",
+              "type": "object",
+              "properties": {
+                "post_box": {
+                  "type": "string"
+                },
+                "suburb": {
+                  "type": "string"
+                },                
+                "town": {
+                  "type": "string"
+                },
+                "postal_code": {
+                  "type": "string"
+                },
+                "source": {
+                  "type": "string" 
+                },
+                "date_stamp": {
+                  "type": "string"
+                }
+              }
+            },
+            "email_address": {
+              "type": "object",
+              "properties": {
+                "email": {
+                  "type": "string"
+                },
+                "source": {
+                  "type": "string"
+                },
+                "date_stamp": {
+                  "type": "string"
+                }
+              }
+            },
+            "landline": {
+              "type": "object",
+              "properties": {
+                "phone_number": {
+                  "type": "string"
+                },
+                "source": {
+                  "type": "string"
+                },
+                "date_stamp": {
+                  "type": "string"
+                }
+              }
+            },
+            "mobile": {
+              "type": "object",
+              "properties": {
+                "phone_number": {
+                  "type": "string"
+                },
+                "source": {
+                  "type": "string"
+                },
+                "date_stamp": {
+                  "type": "string"
+                }
+              }
+            },
+            "website": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string"
+                },
+                "source": {
+                  "type": "string"
+                },
+                "date_stamp": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+    "admin_region":
+    {
+      "description": " Official codes and names for the administrative divisions and villages under which the facility resort - may refer to the schema for admin levels if one exists",
+      "type": "object",
+      "properties": {
+        "admin1": {
+          "description": "Administrative level one name and code e.g. province or state",
+          "type": "object",
+          "properties": {
+            "name": {
+              "description": "Long name for the administrative level one",
+              "type": "string"
+            },
+            "abbreviation": {
+              "description": "Official abbreviation for admin level 1",
+              "type": "string"
+            },
+            "code": {
+              "description": "Official code for admin level 1 - may be the same as abbreviation",
+              "type": "string"
+            },
+            "source": {
+              "type": "string"
+            },
+            "date_stamp": {
+              "type": "string"
+            }
+          }
+        },
+        "admin2": {
+          "description": "Administrative level 2 name and code e.g. province or state",
+          "type": "object",
+          "properties": {
+            "name": {
+              "description": "Long name for the administrative level 2",
+              "type": "string"
+            },
+            "abbreviation": {
+              "description": "Official abbreviation for admin level 2",
+              "type": "string"
+            },
+            "code": {
+              "description": "Official code for admin level 2 - may be the same as abbreviation",
+              "type": "string"
+            },
+            "source": {
+              "type": "string"
+            },
+            "date_stamp": {
+              "type": "string"
+            }
+          }
+        },
+        "admin3": {
+          "description": "Administrative level 3 name and code e.g. province or state",
+          "type": "object",
+          "properties": {
+            "name": {
+              "description": "Long name for the administrative level 3",
+              "type": "string"
+            },
+            "abbreviation": {
+              "description": "Official abbreviation for admin level 3",
+              "type": "string"
+            },
+            "code": {
+              "description": "Official code for admin level 3 - may be the same as abbreviation",
+              "type": "string"
+            },
+            "source": {
+              "type": "string"
+            },
+            "date_stamp": {
+              "type": "string"
+            }
+          }
+        },
+        "admin4": {
+          "description": "Administrative level 4 name and code e.g. province or state",
+          "type": "object",
+          "properties": {
+            "name": {
+              "description": "Long name for the administrative level 4",
+              "type": "string"
+            },
+            "abbreviation": {
+              "description": "Official abbreviation for admin level 4",
+              "type": "string"
+            },
+            "code": {
+              "description": "Official code for admin level 4 - may be the same as abbreviation",
+              "type": "string"
+            },
+            "source": {
+              "type": "string"
+            },
+            "date_stamp": {
+              "type": "string"
+            }
+          }
+        }            
+      }
+    },
+    "coordinates": 
+    {
+      "description": "Geographical coordinates of health facility",
+      "required": [ "latitude", "longitude" ],
+      "type": "object",
+      "properties": {
+        "latitude": {            
+          "type": "number",
+          "minimum":-90,
+          "maximum": 90
+        },
+        "longitude": {
+          "type": "number",
+          "minimum": -180,
+          "maximum": 180
+        },
+        "source": {
+          "type": "string"
+        },
+        "date_stamp": {
+          "type": "string"
+        }
+      }
+    },
+    "facility_status": 
+    {
+      "description": "Information relevant to the operational status of the facility",
+      "type": "object",
+      "properties": {
+        "status": {
+          "description": "Whether the facility is still operational or not i.e open or closed",
+          "type": "string"
+        },
+        "open_date": {
+          "description": "Althought the datestamp of establishing the unique facility identifier may be considered as the date when the facility was opened, this assumption may not always hold true - the date here referred to the official opening date of the facility",
+          "type": "object",
+          "properties": {
+            "date": {
+              "type": "string"
+            },
+            "source": {
+              "type": "string"
+            },
+            "date_stamp": {
+              "type": "string"
+            }
+          }
+        },
+        "close_date": {
+          "description": "If a facility is no longer functional, when was the official closing date",
+          "type": "object",
+          "properties": {
+            "date": {
+              "type": "string"
+            },
+            "source": {
+              "type": "string"
+            },
+            "date_stamp": {
+              "type": "string"
+            },
+            "comment": {
+              "description": "Reason for closing or other comment",
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "services": 
+    {
+      "description": "A full list of services that can be accessed at the facility",
+      "type": "object",
+      "properties": {
+        "service_list": {
+          "description": "A list of services",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "service_codes": {
+          "description": "A code for each service - may refer to another JSON schema",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "source_list": {
+          "description": "Source for each service",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }            
+        },
+        "date_stamp": {
+          "description": "Date stamp for when each service was added",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      } 
+    },
+    "infrastructure": 
+    {
+      "description": "A list of infrastructure available at the facility - including electricity, running water, ambulances, wifi, etc",
+      "type": "object",
+      "properties": {
+        "infrastructure_list": {
+          "description": "A list of infrastructures",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "infrastructure_codes": {
+          "description": "A code for each service - may refer to another JSON schema",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "infrastructure_quant": {
+          "description": "Quantification of infrastructure where it makes sense",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }          
+        },
+        "source_list": {
+          "description": "Source for each infrastructure",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }            
+        },
+        "date_stamp": {
+          "description": "Date stamp for when each infrastructure was added",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      } 
+    }
+  }
+}
+
+}

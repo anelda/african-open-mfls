@@ -1,0 +1,170 @@
+{
+    "fac_identifier": 
+    {
+        "identifier": "HF000001",
+        "source": "user1",
+        "date_stamp": "2020-03-20 20:30:34"
+    },
+    "legacy_identifiers": 
+    {
+        "legacy_identifiers": [ "hosp_201" ],
+        "source": [ "user1" ],
+        "date_stamp": [ "2020-03-20 20:30:34" ]
+        
+    },
+    "facility_name": 
+    {
+        "name_english": {
+            "name": "The Best Hospital",
+            "source": "user1",
+            "date_stamp": "2020-03-20 20:30:34"
+    },
+        "names_local": [ "Esona Sibhedlele Sihle"],
+        "names_languages": ["isiXhosa"]
+    },
+    "previous_names": 
+    {
+        "names": [ "First Hospital" ],
+        "source": [ "user1"],
+        "date_stamp": [ "2020-03-20 20:30:34"]
+    },
+    "facility_type":
+    {
+        "f_type": "Hospital",
+        "source": "user1",
+        "date_stamp": "2020-03-20 20:30:34" 
+    },
+    "ownership": 
+    {
+        "major_owner": {
+            "owner": "Private",
+            "source": "user1",
+            "date_stamp": "2020-03-20 20:30:34" 
+        },
+        "sub_owner": {
+            "owner": "Mediclinic",
+            "source": "user1",
+            "date_stamp": "2020-03-20 20:30:34"
+        }
+    },
+    "contact_details":
+    {
+        "facility_head": {
+            "full_name": "Josie Head",
+            "email": "head@besthospital.com",
+            "landline": "+29 (0)32 782-1244",
+            "source": "user1",
+            "date_stamp": "2020-03-20 20:30:34" 
+        },
+        "facility_contact": {
+            "physical_address": {
+                "room_number": "B390a",
+                "building_name": "The Building",
+                "street_number": "29011",
+                "street_name": "First Street",
+                "suburb": "MySuburb",
+                "town": "MyTown",
+                "code": "34Z389",
+                "source": "user1",
+                "date_stamp": "2020-03-20 20:30:34" 
+            },
+            "postal_address": {
+                "post_box": "PO Box 290",
+                "suburb": "MySuburb",
+                "town": "MyTown",
+                "postal_code": "34Z2990",
+                "source": "user1",
+                "date_stamp": "2020-03-20 20:30:34",
+                
+            },
+            "email_address": {
+                "email": "contact@besthospital.com",
+                "source": "user1",
+                "date_stamp": "2020-03-20 20:30:34"
+            },
+            "landline": {
+                "phone_number": "+29 (0)32 782-1243",
+                "source": "user1",
+                "date_stamp": "2020-03-20 20:30:34" 
+            },
+            "mobile": {
+                "phone_number": "+29 (0)52 756-1634",
+                "source": "user1",
+                "date_stamp": "2020-03-20 20:30:34" 
+            },
+            "website": {
+                "url": "https://www.besthospital.com",
+                "source": "user1",
+                "date_stamp": "2020-03-20 20:30:34"
+            }
+        },
+    "admin_region":
+    {
+        "admin1": {
+            "name": "Gauteng",
+            "abbreviation": "GP",
+            "code": "GP",
+            "source": "admin_boundary_db version 2011",
+            "date_stamp": "2020-03-20 20:30:34"
+        },
+        "admin2": {
+            "name": "Sedibeng District Municipality",
+            "abbreviation": "Sedibeng",
+            "code": "DC42",
+            "source": "admin_boundary_db version 2011",
+            "date_stamp": "2020-03-20 20:30:34" 
+        },
+        "admin3": {
+            "name": "Midvaal Local Municipality",
+            "abbreviation": "Midvaal",
+            "code": "GT422",
+            "source": "admin_boundary_db version 2011",
+            "date_stamp": "2020-03-20 20:30:34"
+        },
+        "admin4": {
+            "name": "Ward 11",
+            "abbreviation": "WD11",
+            "code": "74202011",
+            "source": "admin_boundary_db version 2011",
+            "date_stamp": "2020-03-20 20:30:34"
+        }
+    },
+    "coordinates": 
+    {
+        "latitude": "-26.592384",
+        "longitude": "28.100841",
+        "source": "Google Maps API",
+        "date_stamp": "2020-03-20 20:30:34" 
+    },
+    "facility_status": 
+    {
+        "status": "Closed",
+        "open_date": {
+            "date": "2002-03-12",
+            "source": "user1",
+            "date_stamp": "2020-03-20 20:30:34"
+        },
+        "close_date": {
+            "date": "2020-12-20",
+            "source": "user1",
+            "date_stamp": "2020-03-20 20:30:34",
+            "comment": "Closed due to fire - see press release at https://www.pressrelease.co.za/fire-closes-hospital"
+        }
+    },
+    "services": 
+    {
+        "service_list": ["General clinic", "Family planning", "Immunization", "Oncology", "X-ray", "Pathology"],
+        "service_codes": ["S20018", "S20015", "S20398", "S91109", "S49019", "S09976"],
+        "source_list": ["user1", "user1", "user1", "user1", "user1", "user1"],
+        "date_stamp": ["2020-03-20 20:30:34", "2020-03-20 20:30:34", "2020-03-20 20:30:34", "2020-03-20 20:30:34", "2020-03-20 20:30:34", "2020-03-20 20:30:34"]
+    },
+    "infrastructure": 
+    {
+        "infrastructure_list": ["ambulance", "water", "electricity", "wifi", "surgical beds", "ward beds", "ICU beds", "ventilators"],
+        "infrastructure_codes": ["N20111", "N40291", "N09920", "N72551", "N66789", "N45467", "N10299", "N37200"],
+        "infrastructure_quant": ["4", "running", "intermittent", "fibre", "40", "399", "30", "2"],
+        "source_list": ["user1", "user1", "user1", "user1", "user1", "user1", "user1", "user1"],
+        "date_stamp": ["2020-03-20 20:30:34", "2020-03-20 20:30:34", "2020-03-20 20:30:34", "2020-03-20 20:30:34", "2020-03-20 20:30:34", "2020-03-20 20:30:34", "2020-03-20 20:30:34", "2020-03-20 20:30:34", "2020-03-20 20:30:34", "2020-03-20 20:30:34"] 
+    }
+}
+  

@@ -508,22 +508,48 @@ According to this document, the capturing of service domain and other informatio
 ```{r recommended_attributes}
 
 recommende_attr <- tibble(
-  identifier = as.character(),
-  legacy_identifiers = as.character(),
-  name = as.character(),
-  previous_names = as.character(),
-  type = as.character(),
-  ownership = as.character(),
-  ownership_secondary = as.character(),
+  facility_id = as.character(),
+  facility_id_source = as.character(),
+  facility_id_timestamp = as.date(),
+  legacy_ids = as.list(),
+  legacy_ids_source = as.character(),
+  legacy_ids_timestamp = as.date(),
+  facility_name = as.character(),
+  facility_name_date = as.character(),
+  facility_name_timestamp = as.date(),
+  previous_names = as.list(),
+  previous_names_date = as.list(), # list of as.character()
+  previous_names_timestamp = as.list(), # list of as.date()
+  facility_type = as.character(),
+  type_date = as.character(),
+  type_timestamp = as.date(),
+  ownership = as.list(), # may have various levels of ownership - all should be listed
+  ownership_date = as.list(), # list of as.character() 
+  ownership_timestamp = as.list(), # list of as.date()
   contact_landline = as.character(),
+  contact_landline_date = as.character(),
+  contact_landline_timestamp = as.date(),
   contact_mobile = as.character(),
+  contact_mobile_date = as.character(),
+  contact_mobile_timestamp = as.date(),
   contact_email = as.character(),
-  website = as.character(),
+  contact_email_date = as.character(),
+  contact_email_timestamp = as.date(),
   facility_head_name = as.character(),
+  facility_head_name_date = as.character(),
+  facility_head_name_timestamp = as.date(),
   facility_head_surname = as.character(),
+  facility_head_surname_date = as.character(),
+  facility_head_surname_timestamp = as.date(),
   facility_head_position = as.character(),
+  facility_head_position_date = as.character(),
+  facility_head_position_timestamp = as.date(),
   address = as.character(),
+  address_date = as.character(),
+  address_timestamp = as.date(),
   admin_level2_code = as.character(),
+  admin_level2_date = as.character(),
+  admin_level2_timestamp = as.date(),
   admin_level2_name = as.character(),
   admin_level3_code = as.character(),
   admin_level3_name = as.character(),
@@ -540,10 +566,12 @@ recommende_attr <- tibble(
   facility_status = as.character(),
   facility_status_comment = as.character(),
   date_opened = as.character(),
-  date_closed = as.character()
-  
-  
+  date_closed = as.character(),
+  website = as.character(),
+  services = as.list(),
+  infrastructure = as.list()
   )
+
 ```
 
 
