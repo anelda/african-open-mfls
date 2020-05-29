@@ -1,21 +1,60 @@
 ---
 title: "Comparing African Open Master Facility Lists"
 author: "Anelda van der Walt"
-date: "07 May 2020"
-output: html_document
+date: "29 May 2020"
+output:
+  html_document:
+    theme: journal
+    code_folding: hide
+    includes:
+      after_body: head_foot/footer.html
+      before_body: head_foot/header.html
+    toc: yes
+    toc_float:
+      collapsed: no
+      smooth_scroll: yes
+
 ---
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)<br>
+[![License: CC BY 4.0](https://licensebuttons.net/l/by/4.0/80x15.png)](https://creativecommons.org/licenses/by/4.0/)
+
+\*\* *Please observe individual dataset licensing if you would like to use the original datasets*
 
 # Background
 
-In February 2020 the [_afrimapr_](http://afrimapr.org) team set out to develop building blocks in R that would make open health facility data more accessible to data scientists in Africa and elsewhere. The [`afrihealthsites`](http://afrimapr.org/code) package aims to provide functionality to load, analyse, visualise, and map open health facility datasets such as the one compiled by [KEMRI-Wellcome for sub-Saharan Africa](https://www.ncbi.nlm.nih.gov/pubmed/31346183) and the data made available via the Global Healthsites Mapping Project ([healthsites.io](https://healthsites.io/)). 
+In March 2020 the [_afrimapr_](http://afrimapr.org) team set out to develop building blocks in R that would make open health facility data more accessible to data scientists in Africa and elsewhere. The [`afrihealthsites`](http://afrimapr.org/code) package aims to provide functionality to load, analyse, visualise, and map open health facility datasets such as the list compiled by [KEMRI-Wellcome Research Programme (KWTRP) for sub-Saharan Africa](https://www.ncbi.nlm.nih.gov/pubmed/31346183) and the data made available via the Global Healthsites Mapping Project, ([healthsites.io](https://healthsites.io/)). 
 
-Through our research we learned about the term `master facility list` (MFL). A master facility list contains information about the full complement of health facilities in a country. The World Health Organisation developed [a guide](https://www.who.int/healthinfo/country_monitoring_evaluation/mfl/en/) for countries wanting to develop their own MFL or wanting to strengthen existing MFLs.
+Through our research we learned about the term `master facility list` (MFL). A master facility list contains information about the full complement of health facilities in a country. The World Health Organisation developed [a guide](https://www.who.int/healthinfo/country_monitoring_evaluation/mfl/en/) for countries wanting to develop their own MFL or wanting to strengthen existing MFLs. We were excited to find several African MFLs available online. 
 
-We were excited to find several African MFLs available online. This work forms part of a research paper that we're working on. We wanted to perform some exploratory analysis on the MFLs from different countries to understand the overlaps and differences in terms of information that is made available, data format, and more.
+Here we perform some exploratory analysis on the MFLs from a number of countries to understand the overlaps and differences in terms of information that is made available, data format, and more. We also identify opportunities where `afrimapr` can develop R building blocks to make this kind of analysis easier for others wanting to do something similar.
 
+# Intended audience
+
+This post contains fine-grained details about challenges and solutions for reading open health facility lists from Africa into R and analysing the data in a comparative manner. The narrative is written in an accessible way so that readers with no knowledge of R can gain some value from reading the report. The R code and data is made available for readers wanting to reproduce the analysis or customise it for their own use.
+
+The typical audience may include data analysts or data scientists as well as data providers.
+
+# Related posts
+
+The following posts may be of interest and is referred to in the document below:
+
+- [Open health facility location data for Africa to support COVID-19 efforts](https://afrimapr.github.io/afrimapr.website/blog/2020/healthsites-app/) ~ _26 March 2020_
+- [Merging open health facility data sets](https://afrimapr.github.io/afrimapr.website/blog/2020/merging-health-facility-lists-part1/) ~ _16 April 2020_
+
+# Open African MFLs 
+
+As mentioned, a number of countries already make their official MFL available online and even allow users to download the data in a variety of formats. Open facility lists that are not necessarily acknowledged as the official MFLs are also available for some other countries. The interactive map below shows information about the availability of open facility lists across the continent. _More information on each country can be accessed by clicking on the map._
+
+For this report we decided to focus on countries where data adhered to the following criteria:
+
+- a facility list is openly available online;
+- the list is acknowledged by the country's Ministry of Health as the official MFL; 
+- the MFL can be downloaded without having to request permission; and
+- the downloaded data is in a format that can be analysed in R (Excel, CSV, JSON, XML).
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE, message=FALSE, warning=FALSE)
+knitr::opts_chunk$set(message=FALSE, warning=FALSE)
 
 library(here)
 library(readxl)
@@ -51,7 +90,7 @@ library(wordcloud2)
 library(frequency)
 ```
 
-```{r map_open_lists}
+```{r map_open_lists, fig.cap="The availability of open health facility lists in Africa. Click on a country for more details."}
 
 # Load Google Sheet describing African open health facility lists
 # This sheet is now published as CSV and can be read directly from the URL without needing oauth
@@ -84,21 +123,19 @@ tm_shape(africa) +
               popup.vars=c("Owner: "="Owner", "License: "="License", 
                            "Recognised as official MFL: "="Official MFL accessible online",
                            "Download format: " = "Download format", "Geocoded: "="Downloaded data geocoded", 
-                           "Last updated: "="Last updated"))
+                           "Last updated: "="Last updated"),
+              palette = c("#FD6C6C", "#52463F", "#A87F8E"))
 
 tmap_mode("plot")
-
-# Clean up
-remove(africa, africa_lists)
 
 ```
 
 
-# Obtaining the data
+# Obtaining the open MFL data
 
 ## Kenya
 
-The Kenyan MFL is available at http://kmhfl.health.go.ke/#/home. The data is downloadable in Excel format (although there seem to be an API as well, but we did not use the API). Unfortunately one has to visit the website and physically click on the `Export Excel` button to obtain the data. Once downloaded to our `data/raw_data` folder, the data is easily loaded using the function `read_xlsx` from the `read_xl` package.
+The Kenyan MFL is available at http://kmhfl.health.go.ke/#/home. The data is downloadable in Excel format (although there seem to be an API as well, but we did not use the API as it seem to require access to a local copy of the database). Unfortunately one has to visit the website and physically click on the `Export Excel` button to obtain the data rather than being able to access the data directly via a URL. Once downloaded to our `data/raw_data` folder, the data is easily loaded using the function `read_xlsx` from the `read_xl` package.
 
 ```{r kenya}
 
@@ -106,7 +143,7 @@ ken_mfl <- read_xlsx(here("data", "raw_data", "kenya.xlsx"))
 
 ```
 
-```{r kenya_table}
+```{r kenya_table, echo=FALSE}
 
 ken_mfl[1:2,] %>%  kableExtra::kable() %>% 
   kableExtra::kable_styling(bootstrap_options = c("striped", "hover"), full_width = F) %>% 
@@ -117,14 +154,15 @@ ken_mfl[1:2,] %>%  kableExtra::kable() %>%
 
 ## Malawi
 
-The Malawi MFL is available at http://zipatala.health.gov.mw/facilities and can be downloaded in Excel or PDF format. A API exist but more information was not available so we visited the website and downloaded the data to our `data/raw_data` folder by clicking on the `DOWNLOAD EXCEL` button.
+The Malawi MFL is available at http://zipatala.health.gov.mw/facilities and can be downloaded in Excel or PDF format. An API exists but more information was not available and the API was thus not used. We visited the website and downloaded the data to our `data/raw_data` folder by clicking on the `DOWNLOAD EXCEL` button. There is no direct access to the data via a URL.
 
 ```{r malawi}
 
 mwi_mfl <- read_xlsx(here("data", "raw_data", "malawi.xlsx"))
 
 ```
-```{r malawi_table}
+
+```{r malawi_table, echo=FALSE}
 
 mwi_mfl[1:2,] %>%  kableExtra::kable() %>% 
   kableExtra::kable_styling(bootstrap_options = c("striped", "hover"), full_width = F) %>% 
@@ -138,7 +176,7 @@ The [MFL for Namibia](https://mfl.mhss.gov.na/home) is accessible via an API as 
 
 We had some trouble reading the JSON file in R and decided to develop a script in Python that could access the JSON for each facility and convert the dataset to an object that could further be analysed here in R alongside the other country MFLs.
 
-Details of the data structure and download process are available from the [Jupyter Notebook](python_notebooks/namibia_mfl_convert.ipynb).
+Details of the data structure and download process are available from the [Jupyter Notebook](python_notebooks/namibia_mfl_convert.ipynb). It should be noted that data obtained through the API lists all facilities as having facility type `Facility`. Most of the facility names however, contain information about which category it belongs to. We therefore included an additional column in the data called `facility_type` and used regular expressions to identify the facility type according to a list available on the Namibian MFL website. Where the facility name did not include the facility type according to the list we found on the website, we categorised it as `facility_type` = `Other`.
 
 
 ```{r namibia}
@@ -153,7 +191,7 @@ nam_mfl <- read_csv(here("data", "raw_data", "namibia.csv"))
 
 ```
 
-```{r namibia_table}
+```{r namibia_table, echo=FALSE}
 
 nam_mfl[1:2,] %>%  kableExtra::kable() %>% 
   kableExtra::kable_styling(bootstrap_options = c("striped", "hover"), full_width = F) %>% 
@@ -163,9 +201,9 @@ nam_mfl[1:2,] %>%  kableExtra::kable() %>%
 ```
 ## Rwanda
 
-Rwanda makes [their MFL](https://moh.gov.rw/index.php?id=547) available in CSV, Excel or PDF format. Again one has to visit the provided webpage anc physically click on the `CSV` button to download the data.
+Rwanda [their MFL](https://moh.gov.rw/index.php?id=547) available for download in CSV, Excel or PDF format. Again one has to visit the provided webpage and physically click on the `CSV` button to download the data as direct access to the data via a URL is not possible.
 
-The raw data contains two instances of the `District` column that seems to be a duplicate in terms of values stored in this column. 
+The raw data contains two instances of the `District` column that seems to be a duplicate in terms of values stored in this column. R automatically converts the column header of the second `District` column to `District_1` to avoid confusion. The resultant dataset in R thus contains both a `District` and `District_1` column containing exactly the same data. 
 
 ```{r rwanda}
 
@@ -173,7 +211,7 @@ rwa_mfl <- read_csv(here("data", "raw_data", "rwanda.csv"))
 
 ```
 
-```{r rwanda_table}
+```{r rwanda_table, echo=FALSE}
 
 rwa_mfl[1:2,] %>%  kableExtra::kable() %>% 
   kableExtra::kable_styling(bootstrap_options = c("striped", "hover"), full_width = F) %>% 
@@ -192,7 +230,7 @@ ssd_mfl <- read_csv("https://www.southsudanhealth.info/PublicData/facility_info_
 
 ```
 
-```{r s_sudan_table}
+```{r s_sudan_table, echo=FALSE}
 
 ssd_mfl[1:2,] %>%  kableExtra::kable() %>% 
   kableExtra::kable_styling(bootstrap_options = c("striped", "hover"), full_width = F) %>% 
@@ -203,13 +241,15 @@ ssd_mfl[1:2,] %>%  kableExtra::kable() %>%
 
 ## Tanzania
 
-For Tanzania the MFL is available at http://hfrportal.moh.go.tz/index.php?r=page/index&page_name=about_page with data downloadable in Excel format (XLS). The geocoded data can directly be accessed [via a URL](http://hfrportal.moh.go.tz/index.php?r=facilities/exportToExcel&url=https%3A%2F%2Fresourcemap.instedd.org%2Fapi%2Fcollections%2F409.json%3Fpage%3Dall%26box%3D-180%2C-90%2C179.99%2C90%26Admin_div%5Bunder%5D%3DTZ%26human%3Dtrue&report_title=List_of_Facilities_with_Geo) with no need for physically interacting with the website. It should be noted that the data can be cashed as empty dataset. If the downloaded file contains no data, please visit the website and ensure all geocoded facilities are selected.
+For Tanzania the MFL is available at http://hfrportal.moh.go.tz/index.php?r=page/index&page_name=about_page with data downloadable in Excel format (XLS). The geocoded data can directly be accessed [via a URL](http://hfrportal.moh.go.tz/index.php?r=facilities/exportToExcel&url=https%3A%2F%2Fresourcemap.instedd.org%2Fapi%2Fcollections%2F409.json%3Fpage%3Dall%26box%3D-180%2C-90%2C179.99%2C90%26Admin_div%5Bunder%5D%3DTZ%26human%3Dtrue&report_title=List_of_Facilities_with_Geo) with no need for physically interacting with the website. It should be noted that the data might be cashed as empty dataset on the website. If the downloaded file contains no data, please visit the website and ensure all geocoded facilities are selected.
 
 There are also 1,378 facilities without coordinates in this database. These can be downloaded by visiting [this URL](http://hfrportal.moh.go.tz/index.php?r=facilities/exportToExcel&url=https%3A%2F%2Fresourcemap.instedd.org%2Fapi%2Fcollections%2F409.json%3Fpage%3Dall%26location_missing%3Dtrue%26Admin_div%5Bunder%5D%3DTZ%26human%3Dtrue&report_title=List_of_Facilities_with_No_Geo).
 
-Thankfully these two datasets contain the same columns (`Latitude` and `Longitude` is retained in the non-geocoded file). We can therefore merge the two datasets easily for combined analysis.
+The Excel files with both the geocoded and non-geocoded data contain the same columns (`Latitude` and `Longitude` is retained in the non-geocoded file). We can therefore merge the two datasets easily for combined analysis.
 
-Unfortunately, the very first row of the Excel sheet is made up of merged cells. The row contains information about the date and time of download of the data and can be deleted. Because of the merged cells, the data has to be downloaded to disk, opened in Excel or LibreOffice or other spreadsheet package. The first row has to be removed and the file saved. Only after this can the file be loaded successfully in R.
+It should be noted that the very first row of both Excel sheets consists of merged cells. The row contains information about the date and time of download of the data and can be deleted. Because of the merged cells, the data has to be downloaded to disk, opened in Excel, LibreOffice or any other spreadsheet package. The first row has to be removed and the file saved. Only after this step is performed, can the file be loaded successfully into R for further analysis. _R does not like merged cells..._
+
+It should also be noted that the geocoded data excludes all facilities situated on the islands of Zanzibar and Pemba but includes facilities based on Mafia Island. Zanzibar has its own Ministry of Health (Pemba reports under this MoH).
 
 ```{r tanzania}
 
@@ -223,7 +263,7 @@ remove(tanzania_nongeocode, tanzania_geocode)
 
 ```
 
-```{r tanzania_table}
+```{r tanzania_table, echo=FALSE}
 
 tza_mfl[1:2,] %>%  kableExtra::kable() %>% 
   kableExtra::kable_styling(bootstrap_options = c("striped", "hover"), full_width = F) %>% 
@@ -242,7 +282,7 @@ zmb_mfl <- read_csv("https://raw.githubusercontent.com/MOH-Zambia/MFL/master/geo
 
 ```
 
-```{r zambia_table}
+```{r zambia_table, echo=FALSE}
 
 zmb_mfl[1:2,] %>%  kableExtra::kable() %>% 
   kableExtra::kable_styling(bootstrap_options = c("striped", "hover"), full_width = F) %>% 
@@ -254,9 +294,9 @@ zmb_mfl[1:2,] %>%  kableExtra::kable() %>%
 
 # Loading other open health facility data sets
 
-We can also access the open health facility data available through the [KEMRI-Wellcome group](https://www.ncbi.nlm.nih.gov/pubmed/31346183) and [healthsites.io](https://healthsites.io/). Both these datasets can be accessed via the `afrimapr` [`afrihealthsites` package](http://afrimapr.org/code).
+We can also access the open health facility data available through the [KEMRI|Wellcome Trust Research Programme](https://www.ncbi.nlm.nih.gov/pubmed/31346183) and [healthsites.io](https://healthsites.io/). Both these datasets can be accessed via the `afrimapr` [`afrihealthsites` package](http://afrimapr.org/code).
 
-```{r create_country_lists}
+```{r create_country_lists, echo=FALSE}
 # Create vector with iso3 code of country
 countries <- c("ken", "mwi", "nam", "rwa", "ssd","tza", "zmb")
 
@@ -281,11 +321,11 @@ for (country in countries){
 
 ```
 
-Below are excerpts from the WHO and healthsites.io data for Kenya to give the reader an overview of column headers and data format.
+Below we show excerpts from the WHO and healthsites.io data for Kenya to give the reader an overview of column headers and data format.
 
 #### Kenya: WHO dataset
 
-```{r kenya_who_table}
+```{r kenya_who_table, echo=FALSE}
 
 ken_who[1:2,] %>%  kableExtra::kable() %>% 
   kableExtra::kable_styling(bootstrap_options = c("striped", "hover"), full_width = F) %>% 
@@ -297,7 +337,7 @@ ken_who[1:2,] %>%  kableExtra::kable() %>%
 
 #### Kenya: healthsites.io dataset
 
-```{r kenya_hs_table}
+```{r kenya_hs_table, echo=FALSE}
 
 ken_hs[1:2,] %>%  kableExtra::kable() %>% 
   kableExtra::kable_styling(bootstrap_options = c("striped", "hover"), full_width = F) %>% 
@@ -357,7 +397,7 @@ health_lists_df %>%
   group_by(Country) %>% 
   ggplot(aes(x = Country, y = Facilities, fill = `Data Source`)) +
   geom_bar(stat = "identity", position = "dodge") +
-  scale_fill_viridis(discrete = TRUE) +
+  scale_fill_manual(values = c("#52463F", "#FD6C6C", "#A87F8E")) +
   theme_minimal()
 
 ```
@@ -371,6 +411,8 @@ If we want to compare the types of facilities listed in each dataset, we first h
 k_types <- unique(ken_mfl$`Facility type`)
 
 m_types <- unique(mwi_mfl$TYPE)
+
+n_types <- unique(nam_mfl$facility_type)
 
 r_types <- unique(rwa_mfl$`Facility type`)
 
@@ -419,51 +461,44 @@ hs_fac_types <- tibble(country = hs_country,
 
 ```
 
-Here is the mapping:
+```{r facility_type_tibble}
 
-The columns containing facility types in the WHO dataset and healthsites.io were respectively named `Facility type` and `amenity`.
+facility_types_table <- tibble(
+  Country = unlist(hs_fac_types$country),
+  `MFL "Type" Column` = c("Facility type", "TYPE", "None provided", "Facility type", "type", "Facility Type", "facility_type"),
+  MFL = c(paste(k_types, collapse = ", "), paste(m_types, collapse = ", "), paste(n_types, collapse = ", "), paste(r_types, collapse = ", "), 
+          paste(s_types, collapse = ", "), paste(t_types, collapse = ", "), paste(z_types, collapse = ", ")),
+  `WHO (Facility type)` = c(paste(unlist(who_fac_types$types[who_fac_types$country == "Kenya"]), collapse = ", "),
+          paste(unlist(who_fac_types$types[who_fac_types$country == "Malawi"]), collapse = ", "),
+          paste(unlist(who_fac_types$types[who_fac_types$country == "Namibia"]), collapse = ", "),
+          paste(unlist(who_fac_types$types[who_fac_types$country == "Rwanda"]), collapse = ", "),
+          paste(unlist(who_fac_types$types[who_fac_types$country == "South Sudan"]), collapse = ", "),
+          paste(unlist(who_fac_types$types[who_fac_types$country == "Tanzania"]), collapse = ", "),
+          paste(unlist(who_fac_types$types[who_fac_types$country == "Zambia"]), collapse = ", ")
+          ),
+  `healthsites.io (amenity)` = c(paste(unlist(hs_fac_types$types[hs_fac_types$country == "Kenya"]), collapse = ", "),
+                     paste(unlist(hs_fac_types$types[hs_fac_types$country == "Malawi"]), collapse = ", "),
+                     paste(unlist(hs_fac_types$types[hs_fac_types$country == "Namibia"]), collapse = ", "),
+                     paste(unlist(hs_fac_types$types[hs_fac_types$country == "Rwanda"]), collapse = ", "),
+                     paste(unlist(hs_fac_types$types[hs_fac_types$country == "South Sudan"]), collapse = ", "),
+                     paste(unlist(hs_fac_types$types[hs_fac_types$country == "Tanzania"]), collapse = ", "),
+                     paste(unlist(hs_fac_types$types[hs_fac_types$country == "Zambia"]), collapse = ", "))
+)
 
-- Kenya: column containing facility types in MFL = `Facility type`
+```
 
-    - MFL: `r paste(k_types, sep = ", ")`
-    - WHO: `r paste(unlist(who_fac_types$types[who_fac_types$country == "Kenya"]), collapse = ", ")`
-    - healthsites.io: `r paste(unlist(hs_fac_types$types[hs_fac_types$country == "Kenya"]), collapse = ", ")`
-  
-- Malawi: column containing facility types in MFL = `TYPE`
+```{r fac_type_table, echo=FALSE}
 
-    - MFL: `r paste(m_types, sep = ", ")`
-    - WHO: `r paste(unlist(who_fac_types$types[who_fac_types$country == "Malawi"]), collapse = ", ")`
-    - healthsites.io: `r paste(unlist(hs_fac_types$types[hs_fac_types$country == "Malawi"]), collapse = ", ")`
-  
-- Namibia: No column for facility types in MFL
+facility_types_table %>%  kableExtra::kable() %>% 
+  kableExtra::kable_styling(bootstrap_options = c("striped", "hover"), full_width = F) %>% 
+  kableExtra::scroll_box(width = "100%")
 
-    - WHO: `r paste(unlist(who_fac_types$types[who_fac_types$country == "Namibia"]), collapse = ", ")`
-    - healthsites.io: `r paste(unlist(hs_fac_types$types[hs_fac_types$country == "Namibia"]), collapse = ", ")`
-  
-- Rwanda: Column name for facility types in MFL = `Facility type`
+# Clean up
 
-    - MFL: `r paste(r_types, sep = ", ")`
-    - WHO: `r paste(unlist(who_fac_types$types[who_fac_types$country == "Rwanda"]), collapse = ", ")`
-    - healthsites.io: `r paste(unlist(hs_fac_types$types[hs_fac_types$country == "Rwanda"]), collapse = ", ")`
-  
-- South Sudan: Column name for facility types in MFL = `type`
+remove(facility_types_table)
 
-    - MFL: `r paste(s_types, sep = ", ")`
-    - WHO: `r paste(unlist(who_fac_types$types[who_fac_types$country == "South Sudan"]), collapse = ", ")`
-    - healthsites.io: `r paste(unlist(hs_fac_types$types[hs_fac_types$country == "South Sudan"]), collapse = ", ")`
-  
+```
 
-- Tanzania: Column name for facility types in MFL = `Facility Type`
-
-    - MFL: `r paste(t_types, sep = ", ")`
-    - WHO: `r paste(unlist(who_fac_types$types[who_fac_types$country == "Tanzania"]), collapse = ", ")`
-    - healthsites.io: `r paste(unlist(hs_fac_types$types[hs_fac_types$country == "Tanzania"]), collapse = ", ")`
-  
-- Zambia: Column name for facility types in MFL = `facility_type`
-
-    - MFL: `r paste(z_types, sep = ", ")`
-    - WHO: `r paste(unlist(who_fac_types$types[who_fac_types$country == "Zambia"]), collapse = ", ")`
-    - healthsites.io: `r paste(unlist(hs_fac_types$types[hs_fac_types$country == "Zambia"]), collapse = ", ")`
 
 ### Recommended facility attributes in an MFL
 
@@ -505,77 +540,16 @@ The guide strongly recommends that each datasource is indicated along with a tim
 
 According to this document, the capturing of service domain and other information not mentioned above form part of the optional component of the MFL.
 
-```{r recommended_attributes}
 
-recommende_attr <- tibble(
-  facility_id = as.character(),
-  facility_id_source = as.character(),
-  facility_id_timestamp = as.date(),
-  legacy_ids = as.list(),
-  legacy_ids_source = as.character(),
-  legacy_ids_timestamp = as.date(),
-  facility_name = as.character(),
-  facility_name_date = as.character(),
-  facility_name_timestamp = as.date(),
-  previous_names = as.list(),
-  previous_names_date = as.list(), # list of as.character()
-  previous_names_timestamp = as.list(), # list of as.date()
-  facility_type = as.character(),
-  type_date = as.character(),
-  type_timestamp = as.date(),
-  ownership = as.list(), # may have various levels of ownership - all should be listed
-  ownership_date = as.list(), # list of as.character() 
-  ownership_timestamp = as.list(), # list of as.date()
-  contact_landline = as.character(),
-  contact_landline_date = as.character(),
-  contact_landline_timestamp = as.date(),
-  contact_mobile = as.character(),
-  contact_mobile_date = as.character(),
-  contact_mobile_timestamp = as.date(),
-  contact_email = as.character(),
-  contact_email_date = as.character(),
-  contact_email_timestamp = as.date(),
-  facility_head_name = as.character(),
-  facility_head_name_date = as.character(),
-  facility_head_name_timestamp = as.date(),
-  facility_head_surname = as.character(),
-  facility_head_surname_date = as.character(),
-  facility_head_surname_timestamp = as.date(),
-  facility_head_position = as.character(),
-  facility_head_position_date = as.character(),
-  facility_head_position_timestamp = as.date(),
-  address = as.character(),
-  address_date = as.character(),
-  address_timestamp = as.date(),
-  admin_level2_code = as.character(),
-  admin_level2_date = as.character(),
-  admin_level2_timestamp = as.date(),
-  admin_level2_name = as.character(),
-  admin_level3_code = as.character(),
-  admin_level3_name = as.character(),
-  admin_level4_code = as.character(),
-  admin_level4_name = as.character(),
-  report_level1_name = as.character(),
-  report_level1_code = as.character(),
-  report_level2_name = as.character(),
-  report_level2_code = as.character(),
-  report_level3_name = as.character(),
-  report_level3_code = as.character(),
-  latitude = as.numeric(),
-  longitude = as.numeric(),
-  facility_status = as.character(),
-  facility_status_comment = as.character(),
-  date_opened = as.character(),
-  date_closed = as.character(),
-  website = as.character(),
-  services = as.list(),
-  infrastructure = as.list()
-  )
+```{r json_schema, echo=FALSE}
+
+# benchmark <- fromJSON(here("schemas", "mfl_example.json"), simplifyVector = TRUE)
+# benchmark_df <- flatten(as.data.frame(benchmark))
+
 
 ```
 
-
-```{r cleanup_facility_types}
+```{r cleanup_facility_types, echo=FALSE}
 
 remove(k_types, m_types, r_types, s_types, t_types, z_types, names_who, datasets_who, who_country, who_types, names_hs, datasets_hs, hs_country, hs_types, who, hs, hs_fac_types, who_fac_types)
 
@@ -583,7 +557,38 @@ remove(k_types, m_types, r_types, s_types, t_types, z_types, names_who, datasets
 
 ## Facility attributes
 
-Taking a closer look at the type of attributes that are available from country MFLs and other open data sources we notice great variability in terms of how well facililties are described. The table below shows the column headers for each dataset.
+Taking a closer look at the type of attributes that are available from country MFLs and other open data sources we notice great variability in terms of how well facililties are described. The total number of attributes for each dataset can be visualised below. 
+
+```{r attributes_plot}
+
+# Create table with two columns - country & number of attributes i.e. number of columns
+header_df <- tibble(Country = c("Kenya MFL", "Malawi MFL", "Namibia MFL", "Rwanda MFL", "South Sudan MFL", "Tanzania MFL", "Zambia MFL", 
+                                "KWTRP", "healthsites.io"),
+                    Attributes = c(length(colnames(ken_mfl)), length(colnames(mwi_mfl)), length(colnames(nam_mfl)), length(colnames(rwa_mfl)),
+                                   length(colnames(ssd_mfl)), length(colnames(tza_mfl)), length(colnames(zmb_mfl)), length(colnames(ken_who)),
+                                   length(colnames(ken_hs)))
+)
+
+header_df %>% 
+  # Order descending so that plot looks nicer
+  arrange(desc(Attributes)) %>% 
+  mutate(Country = factor(Country, Country)) %>% 
+  ggplot(aes(x = Country, y = Attributes)) +
+  geom_bar(stat = "identity", width = 0.5, fill = "#FD6C6C") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 30))
+
+```
+
+```{r clean_up, echo=FALSE}
+
+# Clean up
+remove(header_df)
+
+```
+
+
+The table below shows the column headers for each dataset.
 
 ```{r table_headers}
 
@@ -618,7 +623,7 @@ table_headers <- tibble(`healthsite.io` = sort(colnames(ken_hs)),
 
 ```
 
-```{r dataset_column_headers_table}
+```{r dataset_column_headers_table, echo=FALSE}
 
 table_headers %>%  kableExtra::kable() %>% 
   kableExtra::kable_styling(bootstrap_options = c("striped", "hover"), full_width = F) %>% 
@@ -660,3 +665,13 @@ ggwordcloud::ggwordcloud2(dat, size=1.2)
 # Clean up
 remove(corpus, DTM, mat, f, dat)
 ```
+
+# What next?
+
+[Andy](https://twitter.com/southmapr) has already started working on functionality in `afrihealthsites` to allow users to load a file containing a custom health facility list. This may be data obtained from the internet or an in-house (proprietary) file for example an official MFL such as the ones described in this post. The new functionality will enable users to compare and contrast their dataset against the KWTRP and healthsites.io data amongst others. We'll continue development of functionality related to health facility lists and look forward to hear from the community about their needs and experience. 
+
+
+# Feedback
+
+Please get in touch through one of the channels listed on [our website](http://afrimapr.org).
+
