@@ -14,5 +14,4 @@ A blog post about this is also available [on our website](https://afrimapr.githu
 
 ## Please cite this work:
 
-Anelda van der Walt, & Andy South. (2020, May 29). Exploring open African health facility data 
-(Version v1.0). Zenodo. [http://doi.org/10.5281/zenodo.3754647](http://doi.org/10.5281/zenodo.3754647)
+Anelda van der Walt, & Andy South. (2020, June 1). Exploring open African health facility data (Version v1.1). Zenodo. http://doi.org/10.5281/zenodo.3871195
